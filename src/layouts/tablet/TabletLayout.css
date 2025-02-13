@@ -1,0 +1,226 @@
+@import '../styles.css';
+
+.tablet-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tablet-header {
+  height: 70px;
+  background-color: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.tablet-header-content {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tablet-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.title-links {
+  display: flex;
+  align-items: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.title-links a {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.title-links a:hover {
+  color: var(--sg-red);
+}
+
+.title-links .separator {
+  color: var(--text-primary);
+  margin: 0 4px;
+}
+
+.tablet-sg-logo {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  background: var(--sg-red);
+  border-radius: 50%;
+}
+
+.tablet-logo-crescent {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  background: var(--sg-white);
+  border-radius: 50%;
+  transform: translateX(4px);
+}
+
+.tablet-logo-stars span {
+  width: 5px;
+  height: 5px;
+}
+
+.tablet-logo-stars span:nth-child(1) { transform: translate(15px, 10px); }
+.tablet-logo-stars span:nth-child(2) { transform: translate(22px, 15px); }
+.tablet-logo-stars span:nth-child(3) { transform: translate(10px, 20px); }
+.tablet-logo-stars span:nth-child(4) { transform: translate(25px, 20px); }
+.tablet-logo-stars span:nth-child(5) { transform: translate(17px, 25px); }
+
+.tablet-nav {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+}
+
+.tablet-nav a {
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+}
+
+.tablet-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--sg-red);
+  transition: width 0.3s ease;
+}
+
+.tablet-nav a:hover::after {
+  width: 100%;
+}
+
+.tablet-menu-button {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon {
+  width: 24px;
+  height: 2px;
+  background: var(--text-primary);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.menu-icon::before { transform: translateY(-8px); }
+.menu-icon::after { transform: translateY(8px); }
+
+.menu-icon.open {
+  background: transparent;
+}
+
+.menu-icon.open::before {
+  transform: rotate(45deg);
+}
+
+.menu-icon.open::after {
+  transform: rotate(-45deg);
+}
+
+.tablet-content {
+  flex: 1;
+  display: flex;
+}
+
+.tablet-sidebar {
+  width: 250px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 70px;
+  bottom: 0;
+  z-index: 999;
+}
+
+.tablet-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-content {
+  padding: var(--spacing-md);
+}
+
+.sidebar-content h3 {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.sidebar-content a {
+  display: block;
+  padding: var(--spacing-sm) 0;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.sidebar-content a:hover {
+  color: var(--sg-red);
+}
+
+.tablet-main {
+  flex: 1;
+  padding: var(--spacing-lg);
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.tablet-sidebar.open + .tablet-main {
+  margin-left: 250px;
+}
+
+.tablet-footer {
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .tablet-header-content {
+    max-width: 1200px;
+  }
+
+  .tablet-main {
+    padding: var(--spacing-xl);
+  }
+}

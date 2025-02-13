@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "teamsg",
+    "site": "visionsg",
     "public": "dist",
     "ignore": [
       "firebase.json",
