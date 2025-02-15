@@ -13,7 +13,7 @@ function Navbar() {
         <div className="desktop-logo">
           <div className="vision-logo">V</div>
           <div className="title-links">
-            <Link to="/">singapore vision</Link>
+            <Link to="/">VisionSG</Link>
             {isFood && (
               <>
                 <span className="separator"> - </span>
