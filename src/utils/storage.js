@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob/client';
+import * as blob from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path-browserify';
 
@@ -22,7 +22,7 @@ export async function uploadFile(file, progressCallback = () => {}) {
     progressCallback(30);
 
     // Upload file directly to Vercel Blob
-    const blob = await put(uniqueFileName, file, {
+    const blob = await blob.put(uniqueFileName, file, {
       access: 'public',
       handleUploadUrl: url,
       clientPayload
