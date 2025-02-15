@@ -11,6 +11,7 @@ const MeowBBQPage = lazy(() => import('./pages/MeowBBQPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
+const UploadTestPage = lazy(() => import('./pages/UploadTestPage'))
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -35,6 +36,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AccountPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/upload-test" 
+              element={
+                <ProtectedRoute>
+                  <UploadTestPage />
                 </ProtectedRoute>
               } 
             />
