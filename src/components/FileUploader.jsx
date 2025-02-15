@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { uploadFile } from '../utils/storage';
+import { uploadFile } from '../utils/blob-storage';
 import './FileUploader.css';
 
 export function FileUploader({ onUploadComplete, acceptedTypes = "*" }) {
