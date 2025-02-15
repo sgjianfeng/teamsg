@@ -18,7 +18,7 @@
 .tablet-header-content {
   max-width: 1024px;
   margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  padding: 0 var(--spacing-md);
   height: 100%;
   display: flex;
   justify-content: space-between;

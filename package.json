@@ -1,5 +1,5 @@
 {
-  "name": "teamsg",
+  "name": "visionsg",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,8 +12,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
-    "firebase": "^10.8.0",
+    "@supabase/supabase-js": "^2.48.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0"
@@ -29,5 +28,5 @@
     "gh-pages": "^6.1.1",
     "vite": "^5.0.8"
   },
-  "homepage": "https://sgjianfeng.github.io/teamsg/"
+  "homepage": "https://sgjianfeng.github.io/visionsg/"
 }

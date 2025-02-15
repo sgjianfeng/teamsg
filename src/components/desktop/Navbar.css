@@ -1,0 +1,58 @@
+.desktop-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+}
+
+.nav-auth {
+  margin-left: auto;
+  padding-right: 1rem;
+}
+
+.auth-link {
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.auth-link:hover {
+  background-color: #f5f5f5;
+}
+
+.auth-link svg {
+  color: #666;
+}
+
+.auth-link:hover svg {
+  color: #333;
+}
+
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-email {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.auth-user .auth-link {
+  padding: 0.25rem;
+}
