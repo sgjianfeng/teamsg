@@ -20,13 +20,18 @@ export function AuthProvider({ children }) {
     return data;
   }
 
-  async function verifyOtp(email, token) {
+  async function verifyOtp(email, token, type = 'email') {
+    console.log('Attempting to verify OTP for:', email, 'with type:', type);
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'signup'
+      type: type
     });
-    if (error) throw error;
+    if (error) {
+      console.error('OTP verification error:', error);
+      throw error;
+    }
+    console.log('OTP verification successful:', data);
     return data;
   }
 
@@ -35,7 +40,10 @@ export function AuthProvider({ children }) {
       email,
       password
     });
-    if (error) throw error;
+    if (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
     return data;
   }
 
@@ -59,12 +67,24 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  async function resetPassword(email) {
+    console.log('Requesting password reset for:', email);
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+    console.log('Password reset email sent:', data);
+    return data;
+  }
+
   const value = {
     currentUser,
     signup,
     verifyOtp,
     login,
     logout,
+    resetPassword
   };
 
   return (

@@ -138,7 +138,7 @@ function RegisterPage() {
                   }
                   try {
                     setLoading(true);
-                    await verifyOtp(email, otp);
+                    await verifyOtp(email, otp, 'signup');
                     setOtpVerified(true);
                     setError('Registration successful! Redirecting to home...');
                     setTimeout(() => navigate('/'), 2000);

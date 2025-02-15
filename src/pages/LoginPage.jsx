@@ -8,7 +8,8 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [resetSent, setResetSent] = useState(false);
+  const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -20,7 +21,8 @@ function LoginPage() {
       await login(email, password);
       navigate('/account');
     } catch (error) {
-      setError('Failed to login. Please check your credentials.');
+      console.error('Login error details:', error);
+      setError(`Login failed: ${error.message || 'Please check your credentials.'}`);
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,29 @@ function LoginPage() {
         </form>
         <div className="auth-links">
           Need an account? <Link to="/register">Register</Link>
+          <br />
+          <button 
+            className="link-button"
+            onClick={async () => {
+              if (!email) {
+                setError('Please enter your email first');
+                return;
+              }
+              try {
+                setLoading(true);
+                await resetPassword(email);
+                setResetSent(true);
+                setError('Password reset email has been sent to your email.');
+              } catch (error) {
+                setError('Failed to send reset email: ' + error.message);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading || resetSent}
+          >
+            {resetSent ? 'Reset email sent!' : 'Forgot Password?'}
+          </button>
         </div>
       </div>
     </div>

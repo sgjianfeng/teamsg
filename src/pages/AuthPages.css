@@ -172,6 +172,28 @@ input:disabled {
   text-decoration: underline;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.link-button:disabled {
+  color: #666;
+  cursor: default;
+  text-decoration: none;
+}
+
 .account-info {
   margin-bottom: 1.5rem;
   padding: 1.5rem;
