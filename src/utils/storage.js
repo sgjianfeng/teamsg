@@ -1,6 +1,10 @@
-import { put, del } from '@vercel/blob';
+import { upload, del } from '@vercel/blob/client';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path-browserify';
+
+const handleUploadUrl = import.meta.env.DEV 
+  ? '/src/api/upload-handler'  // 开发环境
+  : '/api/upload-handler';     // 生产环境
 
 // Upload file to Vercel Blob
 export async function uploadFile(file, progressCallback = () => {}) {
@@ -9,10 +13,12 @@ export async function uploadFile(file, progressCallback = () => {}) {
     const ext = path.extname(file.name);
     const uniqueFileName = `${uuidv4()}${ext}`;
 
-    // Create blob
-    const { url } = await put(uniqueFileName, file, {
+    // Upload to Vercel Blob
+    const { url } = await upload(uniqueFileName, file, {
       access: 'public',
-      handleUploadUrl: '/api/upload-handler',
+      handleUploadUrl,
+      clientPayload: { filename: uniqueFileName },
+      token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN // 添加token
     });
 
     // Simulate progress since Vercel Blob doesn't provide progress events
