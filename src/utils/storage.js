@@ -1,10 +1,5 @@
-import { upload, del } from '@vercel/blob/client';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path-browserify';
-
-const handleUploadUrl = import.meta.env.DEV 
-  ? '/src/api/upload-handler'  // 开发环境
-  : '/api/upload-handler';     // 生产环境
 
 // Upload file to Vercel Blob
 export async function uploadFile(file, progressCallback = () => {}) {
@@ -44,16 +39,6 @@ export async function uploadFile(file, progressCallback = () => {}) {
   }
 }
 
-// Delete file from Vercel Blob
-export async function deleteFile(fileName) {
-  try {
-    await del(fileName);
-    return { message: 'File deleted successfully' };
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    throw error;
-  }
-}
 
 // Get public URL for a file
 export function getPublicUrl(url) {
