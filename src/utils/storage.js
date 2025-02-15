@@ -1,3 +1,4 @@
+import { put } from '@vercel/blob/client';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path-browserify';
 
@@ -8,29 +9,29 @@ export async function uploadFile(file, progressCallback = () => {}) {
     const ext = path.extname(file.name);
     const uniqueFileName = `${uuidv4()}${ext}`;
 
-    // Create form data
-    const formData = new FormData();
-    formData.append('file', file);
+    // Simulate initial progress
+    progressCallback(10);
 
-    // Upload to API
-    const response = await fetch('/api/upload-handler', {
-      method: 'POST',
-      body: formData,
+    // Get upload URL from API
+    const response = await fetch('/api/get-upload-url');
+    if (!response.ok) {
+      throw new Error(`Failed to get upload URL: ${response.statusText}`);
+    }
+    const { url, clientPayload } = await response.json();
+    
+    progressCallback(30);
+
+    // Upload file directly to Vercel Blob
+    const blob = await put(uniqueFileName, file, {
+      access: 'public',
+      handleUploadUrl: url,
+      clientPayload
     });
 
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.statusText}`);
-    }
-
-    const { url } = await response.json();
-
-    // Simulate progress since Vercel Blob doesn't provide progress events
-    progressCallback(50);
-    
     // Return the public URL
     progressCallback(100);
     return {
-      url,
+      url: blob.url,
       key: uniqueFileName
     };
   } catch (error) {
@@ -38,7 +39,6 @@ export async function uploadFile(file, progressCallback = () => {}) {
     throw error;
   }
 }
-
 
 // Get public URL for a file
 export function getPublicUrl(url) {
