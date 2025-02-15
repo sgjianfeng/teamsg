@@ -13,13 +13,21 @@ export async function uploadFile(file, progressCallback = () => {}) {
     const ext = path.extname(file.name);
     const uniqueFileName = `${uuidv4()}${ext}`;
 
-    // Upload to Vercel Blob
-    const { url } = await upload(uniqueFileName, file, {
-      access: 'public',
-      handleUploadUrl,
-      clientPayload: { filename: uniqueFileName },
-      token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN // 添加token
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Upload to API
+    const response = await fetch('/api/upload-handler', {
+      method: 'POST',
+      body: formData,
     });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+
+    const { url } = await response.json();
 
     // Simulate progress since Vercel Blob doesn't provide progress events
     progressCallback(50);
