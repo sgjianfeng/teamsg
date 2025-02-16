@@ -1,13 +1,12 @@
 import { getUploadUrl } from '@vercel/blob';
-import { json } from '@vercel/edge';
 
-export const config = {
-  runtime: 'edge',
-};
-
+// Remove runtime export as it's not needed for Edge Functions
 export default async function handler(request) {
   if (request.method !== 'GET') {
-    return json({ error: 'Method not allowed' }, { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
@@ -15,9 +14,15 @@ export default async function handler(request) {
       access: 'public',
     });
 
-    return json({ url, clientPayload });
+    return new Response(JSON.stringify({ url, clientPayload }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.error('Error getting upload URL:', error);
-    return json({ error: 'Internal Server Error' }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
