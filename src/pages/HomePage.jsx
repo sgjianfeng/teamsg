@@ -22,12 +22,8 @@ function HomePage() {
       <div className="hero">
         <div className="hero-content">
           <h1>Vision Singapore</h1>
-          <p>Where visions become reality</p>
+          <p>Partnering with AI to transform your vision into reality</p>
         </div>
-      </div>
-
-      <div className="vision-description">
-        <p>Partnering with AI to transform your vision into reality</p>
       </div>
 
       <div className="industries-section">

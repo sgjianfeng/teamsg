@@ -15,6 +15,30 @@
   align-items: center;
 }
 
+.desktop-logo {
+  display: flex;
+  align-items: center;
+}
+
+.title-links {
+  display: flex;
+  align-items: center;
+}
+
+.tagline {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 2px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.separator {
+  margin: 0 8px;
+  color: #9ca3af;
+}
+
 .nav-auth {
   margin-left: auto;
   padding-right: 1rem;

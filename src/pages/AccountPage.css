@@ -13,18 +13,21 @@
 .team-list {
   background-color: #f8f9fa;
   border-radius: 8px;
-  padding: 15px;
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .team-toolbar {
   display: flex;
   gap: 10px;
-  padding-bottom: 15px;
+  padding: 15px;
   border-bottom: 1px solid #dee2e6;
-  margin-bottom: 15px;
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .tool-button {
@@ -45,15 +48,43 @@
 .team-items {
   overflow-y: auto;
   flex-grow: 1;
+  padding: 15px;
+  padding-top: 0;
+}
+
+/* Webkit scrollbar customization */
+.team-items::-webkit-scrollbar {
+  width: 8px;
+}
+
+.team-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.team-items::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.team-items::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Firefox scrollbar customization */
+.team-items {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f1f1f1;
 }
 
 .team-item {
   padding: 15px;
   border: 1px solid #dee2e6;
   border-radius: 6px;
-  margin-bottom: 10px;
+  margin-top: 15px;
   cursor: pointer;
   transition: background-color 0.2s;
+  background-color: white;
 }
 
 .team-item:hover {
@@ -92,6 +123,31 @@
   padding: 20px;
   border: 1px solid #dee2e6;
   height: 100%;
+  overflow-y: auto;
+}
+
+/* Content area scrollbar customization */
+.team-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.team-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.team-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.team-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.team-content {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f1f1f1;
 }
 
 .empty-state {

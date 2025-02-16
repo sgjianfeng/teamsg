@@ -81,7 +81,9 @@ function AccountPage() {
           </div>
 
           <div className="team-items">
-            {mockTeams.map(team => (
+            {[...mockTeams]
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map(team => (
               <div
                 key={team.id}
                 className="team-item"

@@ -24,6 +24,7 @@ function Navbar() {
           <div className="vision-logo">V</div>
           <div className="title-links">
             <Link to="/">VisionSG</Link>
+            <span className="tagline">Where visions become reality</span>
             {isFood && (
               <>
                 <span className="separator"> - </span>
