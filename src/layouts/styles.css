@@ -1,0 +1,89 @@
+:root {
+  --sg-red: #ED2939;
+  --sg-white: #FFFFFF;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Logo Styles */
+.logo-crescent {
+  position: absolute;
+  background: var(--sg-white);
+  border-radius: 50%;
+}
+
+.logo-stars span {
+  position: absolute;
+  background: var(--sg-red);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* Base Layout Styles */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+footer {
+  padding: var(--spacing-md);
+  text-align: center;
+  background-color: var(--bg-secondary);
+}
+
+/* Shared Navigation Styles */
+nav a {
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: var(--sg-red);
+}
+
+/* Shared Button Styles */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: var(--spacing-sm);
+}
+
+/* Shared Content Styles */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+/* Shared Card Styles */
+.card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
