@@ -51,8 +51,36 @@
 .user-email {
   color: #666;
   font-size: 0.9rem;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.auth-user .auth-link {
+.user-email:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.logout-button {
+  background: none;
+  border: none;
   padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #fee2e2;
+}
+
+.logout-button svg {
+  color: #666;
+}
+
+.logout-button:hover svg {
+  color: #dc2626;
 }
