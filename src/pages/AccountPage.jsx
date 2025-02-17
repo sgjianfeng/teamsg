@@ -92,21 +92,19 @@ function AccountPage() {
     setIsCreating(false);
   };
 
-  const handleCreateSubmit = async (teamData) => {
-    setError(null);
-    try {
-      const result = await TeamModel.create(teamData);
-      if (result.error) throw new Error(result.error);
-      if (!result.data) throw new Error('Failed to create team - no data returned');
-      
-      // Add the new team to existing teams
-      setTeams(prevTeams => [...prevTeams, result.data]);
-      setSelectedTeam(result.data);
-      setIsCreating(false);
-    } catch (err) {
-      console.error('Error creating team:', err);
-      setError(err.message);
+  const handleCreateSubmit = async (result) => {
+    if (result.error) {
+      console.error('Error creating team:', result.error);
+      setError(result.error);
+      // Don't close the form if there's an error
+      return;
     }
+    
+    // On success, update UI state
+    setError(null);
+    setTeams(prevTeams => [result.data, ...prevTeams]); // Add to beginning of array
+    setSelectedTeam(result.data);
+    setIsCreating(false);
   };
 
   if (!currentUser) {

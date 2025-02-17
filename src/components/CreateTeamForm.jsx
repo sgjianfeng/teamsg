@@ -51,20 +51,9 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
         creatorId: currentUser.id
       };
 
+      // Call create and pass full result to parent
       const result = await TeamModel.create(teamData);
-      if (result.error) {
-        setError(result.error);
-        setStep('form');
-        return;
-      }
-
-      if (!result.data) {
-        setError('Failed to create team - no data returned');
-        setStep('form');
-        return;
-      }
-
-      onSubmit(result.data);
+      onSubmit(result);
     } catch (err) {
       setError(err.message);
       setStep('form');
