@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { TeamModel } from '../db/models';
+import { useAuth } from '../contexts/AuthContext';
 import './CreateTeamForm.css';
 
 export default function CreateTeamForm({ onSubmit, onCancel }) {
@@ -9,6 +11,7 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
     description: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +26,7 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
     e.preventDefault();
     // Basic validation
     if (!formData.id.trim() || !formData.name.trim()) {
-      setError('ID and Name are required');
+      setError('Team ID and Name are required');
       return;
     }
 
@@ -31,31 +34,43 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
     setStep('summary');
   };
 
-  const handleConfirm = () => {
-    // Prepare team creation data with default groups
-    const teamData = {
-      ...formData,
-      groups: {
-        admins: {
-          name: 'Admins',
-          roles: ['admin', 'member']
-        },
-        members: {
-          name: 'Members',
-          roles: ['admin', 'member']
-        }
-      },
-      creator: {
-        isTeamCreator: true,
-        isGroupCreator: true,
-        roles: {
-          admins: 'admin',
-          members: 'admin'
-        }
-      }
-    };
+  const { currentUser } = useAuth();
 
-    onSubmit(teamData);
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      if (!currentUser) {
+        throw new Error('You must be logged in to create a team');
+      }
+      
+      // Prepare team creation data
+      const teamData = {
+        ...formData,
+        creatorId: currentUser.id
+      };
+
+      const result = await TeamModel.create(teamData);
+      if (result.error) {
+        setError(result.error);
+        setStep('form');
+        return;
+      }
+
+      if (!result.data) {
+        setError('Failed to create team - no data returned');
+        setStep('form');
+        return;
+      }
+
+      onSubmit(result.data);
+    } catch (err) {
+      setError(err.message);
+      setStep('form');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (step === 'summary') {
@@ -93,11 +108,17 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
           </div>
         </div>
         <div className="form-actions">
-          <button type="button" onClick={() => setStep('form')} className="secondary-button">
+          <button type="button" onClick={() => setStep('form')} className="secondary-button" style={{ height: '40px' }}>
             Back to Edit
           </button>
-          <button type="button" onClick={handleConfirm} className="primary-button">
-            Confirm & Create
+          <button 
+            type="button" 
+            onClick={handleConfirm} 
+            className="primary-button"
+            disabled={isLoading}
+            style={{ height: '40px' }}
+          >
+            {isLoading ? 'Creating...' : 'Confirm & Create'}
           </button>
         </div>
       </div>
@@ -120,6 +141,7 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
           placeholder="Enter unique team ID"
           required
         />
+        <small className="helper-text">This ID must be unique and cannot be changed later</small>
       </div>
 
       <div className="form-group">
@@ -148,13 +170,18 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
       </div>
 
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="secondary-button">
+        <button type="button" onClick={onCancel} className="secondary-button" style={{ height: '40px' }}>
           Cancel
         </button>
-        <button type="submit" className="primary-button">
+        <button type="submit" className="primary-button" style={{ height: '40px' }}>
           Continue to Summary
         </button>
       </div>
+      {error?.includes('Database tables not set up') && (
+        <div className="setup-hint" style={{ marginTop: '16px', textAlign: 'center', color: '#6b7280' }}>
+          Please wait while you are redirected to the database setup page...
+        </div>
+      )}
     </form>
   );
 }

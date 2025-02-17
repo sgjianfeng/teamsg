@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -12,12 +12,29 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function signup(email, password) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) throw error;
-    return data;
+    try {
+      // First create the auth account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) throw error;
+
+      // Then create the user profile in our users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{
+          id: data.user.id,
+          email: data.user.email,
+          created_at: new Date().toISOString()
+        }]);
+      
+      if (profileError) throw profileError;
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async function verifyOtp(email, token, type = 'email') {
@@ -44,6 +61,29 @@ export function AuthProvider({ children }) {
       console.error('Login error:', error);
       throw error;
     }
+
+    // Check if user profile exists, if not create it
+    const { data: profile } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', data.user.id)
+      .single();
+
+    if (!profile) {
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{
+          id: data.user.id,
+          email: data.user.email,
+          created_at: new Date().toISOString()
+        }]);
+      
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw profileError;
+      }
+    }
+
     return data;
   }
 
@@ -53,8 +93,27 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Get initial session and ensure user profile exists
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        // Check if user profile exists
+        const { data: profile } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile) {
+          // Create profile if it doesn't exist
+          await supabase
+            .from('users')
+            .insert([{
+              id: session.user.id,
+              email: session.user.email,
+              created_at: new Date().toISOString()
+            }]);
+        }
+      }
       setCurrentUser(session?.user ?? null);
       setLoading(false);
     });

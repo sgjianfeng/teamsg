@@ -49,6 +49,13 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
+.helper-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -56,6 +63,14 @@
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid #e5e7eb;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-actions button {
+  min-width: 100px;
+  white-space: nowrap;
 }
 
 .secondary-button,
@@ -65,6 +80,10 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .secondary-button {

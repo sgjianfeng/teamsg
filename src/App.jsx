@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import Layout from './layouts/Layout'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { initializeDatabase } from './utils/db-setup'
 import './App.css'
 
 // Lazy load pages for better performance
@@ -12,6 +13,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
 const UploadTestPage = lazy(() => import('./pages/UploadTestPage'))
+const DatabaseSetupPage = lazy(() => import('./pages/DatabaseSetupPage'))
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -20,6 +22,11 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    // Initialize database when app starts
+    initializeDatabase();
+  }, []);
+
   return (
     <Router basename="/">
       <AuthProvider>
@@ -31,6 +38,7 @@ function App() {
             <Route path="/food/meowbbq" element={<MeowBBQPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/database-setup" element={<DatabaseSetupPage />} />
             <Route 
               path="/account" 
               element={
