@@ -87,6 +87,20 @@ export class TeamModel {
         throw teamError;
       }
 
+      // Create default groups
+      const adminGroup = await GroupModel.create({ teamId: team.id, name: 'admins' });
+      const memberGroup = await GroupModel.create({ teamId: team.id, name: 'members' });
+
+      if (adminGroup.error) throw new Error(adminGroup.error);
+      if (memberGroup.error) throw new Error(memberGroup.error);
+
+      // Add creator to both groups with admin role
+      const adminMember = await MemberModel.create({ groupId: adminGroup.data.id, userId: teamData.creatorId, role: 'admin' });
+      const memberMember = await MemberModel.create({ groupId: memberGroup.data.id, userId: teamData.creatorId, role: 'admin' });
+
+      if (adminMember.error) throw new Error(adminMember.error);
+      if (memberMember.error) throw new Error(memberMember.error);
+
       // Add tags if provided
       if (teamData.tags && teamData.tags.length > 0) {
         const { error: tagError } = await supabase
