@@ -1,5 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import CreateTeamForm from '../components/CreateTeamForm';
 import { TeamModel } from '../db/models';
@@ -43,21 +43,35 @@ const mockMessages = [
   }
 ];
 
+const STORAGE_KEY = 'selectedTeamId';
+
 function AccountPage() {
   const { currentUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(() => {
+    // Initialize selectedTeam from localStorage on component mount
+    const storedTeamId = localStorage.getItem(STORAGE_KEY);
+    if (storedTeamId) {
+      return { id: storedTeamId }; // Temporary object until teams load
+    }
+    return null;
+  });
   const [isCreating, setIsCreating] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [activeView, setActiveView] = useState('details'); // 'details' or 'messages'
-  
-  // 加载用户的团队
+
+  // Load teams
   useEffect(() => {
+    let mounted = true;
+
     async function loadTeams() {
       if (!currentUser) {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
         return;
       }
       
@@ -65,17 +79,53 @@ function AccountPage() {
         setError(null);
         const { data, error } = await TeamModel.getUserTeams(currentUser.id);
         if (error) throw error;
-        setTeams(data || []);
+        
+        if (mounted) {
+          const loadedTeams = data || [];
+          setTeams(loadedTeams);
+
+          // If we have a temporary selectedTeam, find and set the full team object
+          if (selectedTeam && !selectedTeam.name) {
+            const fullTeam = loadedTeams.find(t => t.id.toString() === selectedTeam.id.toString());
+            if (fullTeam) {
+              setSelectedTeam(fullTeam);
+              setSearchParams({ teamId: fullTeam.id.toString() }, { replace: true });
+            }
+          }
+        }
       } catch (err) {
         console.error('Error loading teams:', err);
-        setError(err.message);
+        if (mounted) {
+          setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadTeams();
+    return () => { mounted = false; };
   }, [currentUser]);
+
+  // Handle team selection from URL
+  useEffect(() => {
+    if (loading || !teams.length) return;
+
+    const teamId = searchParams.get('teamId');
+    if (!teamId) return;
+
+    // Only update if the team ID is different from current selection
+    if (!selectedTeam || selectedTeam.id.toString() !== teamId) {
+      const team = teams.find(t => t.id.toString() === teamId);
+      if (team) {
+        console.log('Setting team from URL:', team);
+        setSelectedTeam(team);
+        localStorage.setItem(STORAGE_KEY, team.id.toString());
+      }
+    }
+  }, [teams, searchParams, loading]);
 
   // Reset selected message when team changes
   useEffect(() => {
@@ -86,6 +136,8 @@ function AccountPage() {
     setError(null);
     setIsCreating(true);
     setSelectedTeam(null);
+    setSearchParams({});
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleCreateCancel = () => {
@@ -102,9 +154,19 @@ function AccountPage() {
     
     // On success, update UI state
     setError(null);
-    setTeams(prevTeams => [result.data, ...prevTeams]); // Add to beginning of array
-    setSelectedTeam(result.data);
+    const newTeam = result.data;
+    setTeams(prevTeams => [newTeam, ...prevTeams]); // Add to beginning of array
+    setSelectedTeam(newTeam);
+    setSearchParams({ teamId: newTeam.id.toString() });
+    localStorage.setItem(STORAGE_KEY, newTeam.id.toString());
     setIsCreating(false);
+  };
+
+  const handleTeamSelect = (team) => {
+    console.log('Selecting team:', team);
+    setSelectedTeam(team);
+    setSearchParams({ teamId: team.id.toString() });
+    localStorage.setItem(STORAGE_KEY, team.id.toString());
   };
 
   if (!currentUser) {
@@ -155,7 +217,7 @@ function AccountPage() {
                 <div
                   key={team.id}
                   className={`team-item ${selectedTeam?.id === team.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedTeam(team)}
+                  onClick={() => handleTeamSelect(team)}
                 >
                   <h3>{team.name}</h3>
                   <p>{team.description}</p>
@@ -184,7 +246,7 @@ function AccountPage() {
               onSubmit={handleCreateSubmit}
               onCancel={handleCreateCancel}
             />
-          ) : selectedTeam ? (
+          ) : selectedTeam && selectedTeam.name ? (
             <>
               <div className="team-header">
                 <h2>{selectedTeam.name}</h2>
