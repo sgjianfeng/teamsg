@@ -167,9 +167,9 @@ export class TeamModel {
   }
 
   /**
-   * 获取用户所属的所有团队
-   * @param {string} userId - 用户ID
-   * @returns {Promise<Object>} 用户所属的团队列表，包含用户在每个团队中的角色信息
+   * Gets all teams that the user is a member of through groups
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} List of teams with roles and groups
    */
   static async getUserTeams(userId) {
     try {
@@ -184,32 +184,59 @@ export class TeamModel {
         throw new Error('User profile not found. Please ensure you are logged in.');
       }
 
-      // Then get teams user has created
-      const { data: teams, error } = await supabase
-        .from('teams')
+      // Get all teams and groups the user is a member of
+      const { data: memberships, error: membershipError } = await supabase
+        .from('members')
         .select(`
-          id, 
-          name, 
-          description, 
-          created_at, 
-          created_by,
-          team_tag_assignments (
-            tag_name,
-            description
+          role,
+          group:groups (
+            id,
+            name,
+            team:teams (
+              id,
+              name,
+              description,
+              created_at,
+              created_by
+            )
           )
         `)
-        .eq('created_by', userId);
+        .eq('user_id', userId);
 
-      if (error) throw error;
-      
-      // Map the teams to include roles
-      const processedTeams = (teams || []).map(team => ({
-        id: team.id,
-        name: team.name,
-        description: team.description,
-        created_at: team.created_at,
-        created_by: team.created_by,
-        roles: ['admin']
+      if (membershipError) throw membershipError;
+
+      // Process memberships into teams with groups
+      const teamMap = new Map();
+
+      memberships?.forEach(membership => {
+        const team = membership.group.team;
+        if (!team) return;
+
+        if (!teamMap.has(team.id)) {
+          teamMap.set(team.id, {
+            ...team,
+            roles: new Set(),
+            groups: new Set()
+          });
+        }
+
+        const teamData = teamMap.get(team.id);
+        // Add role
+        teamData.roles.add(membership.role);
+        // Add group
+        teamData.groups.add(membership.group);
+
+        // If user is creator, ensure they have admin role
+        if (team.created_by === userId) {
+          teamData.roles.add('admin');
+        }
+      });
+
+      // Convert map to array and format the data
+      const processedTeams = Array.from(teamMap.values()).map(team => ({
+        ...team,
+        roles: Array.from(team.roles),
+        groups: Array.from(team.groups)
       }));
 
       return { data: processedTeams };
