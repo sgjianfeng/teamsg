@@ -1,12 +1,14 @@
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import TeamList from '../components/TeamList';
+import TeamDetails from '../components/TeamDetails';
+import TeamMessages from '../components/TeamMessages';
 import CreateTeamForm from '../components/CreateTeamForm';
 import { TeamModel } from '../db/models';
-import { MessageModel } from '../db/models';
 import './AccountPage.css';
 
-// 示例消息数据，后续将替换为实际数据
+// Mock messages data - will be replaced with actual API data later
 const mockMessages = [
   {
     id: 1,
@@ -44,6 +46,7 @@ const mockMessages = [
 ];
 
 const STORAGE_KEY = 'selectedTeamId';
+const CREATE_MARKER = 'creating';
 
 function AccountPage() {
   const { currentUser } = useAuth();
@@ -52,40 +55,31 @@ function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(() => {
-    // Initialize selectedTeam from localStorage on component mount
     const storedTeamId = localStorage.getItem(STORAGE_KEY);
-    if (storedTeamId) {
-      return { id: storedTeamId }; // Temporary object until teams load
-    }
-    return null;
+    return storedTeamId ? { id: storedTeamId } : null;
   });
-  const [isCreating, setIsCreating] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  const [activeView, setActiveView] = useState('details'); // 'details' or 'messages'
+  const [isCreating, setIsCreating] = useState(() => searchParams.get('view') === CREATE_MARKER);
+  const [activeView, setActiveView] = useState('details');
 
-  // Load teams
   useEffect(() => {
     let mounted = true;
-
+    
     async function loadTeams() {
       if (!currentUser) {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
         return;
       }
       
       try {
         setError(null);
-        const { data, error } = await TeamModel.getUserTeams(currentUser.id);
-        if (error) throw error;
+        const { data, error: loadError } = await TeamModel.getUserTeams(currentUser.id);
+        if (loadError) throw loadError;
         
         if (mounted) {
           const loadedTeams = data || [];
           setTeams(loadedTeams);
 
-          // If we have a temporary selectedTeam, find and set the full team object
-          if (selectedTeam && !selectedTeam.name) {
+          if (selectedTeam && !selectedTeam.name && !isCreating) {
             const fullTeam = loadedTeams.find(t => t.id.toString() === selectedTeam.id.toString());
             if (fullTeam) {
               setSelectedTeam(fullTeam);
@@ -107,66 +101,73 @@ function AccountPage() {
 
     loadTeams();
     return () => { mounted = false; };
-  }, [currentUser]);
+  }, [currentUser, isCreating, selectedTeam]);
 
-  // Handle team selection from URL
   useEffect(() => {
     if (loading || !teams.length) return;
+    
+    if (searchParams.get('view') === CREATE_MARKER) {
+      setIsCreating(true);
+      setSelectedTeam(null);
+      return;
+    }
 
     const teamId = searchParams.get('teamId');
     if (!teamId) return;
 
-    // Only update if the team ID is different from current selection
     if (!selectedTeam || selectedTeam.id.toString() !== teamId) {
       const team = teams.find(t => t.id.toString() === teamId);
       if (team) {
-        console.log('Setting team from URL:', team);
         setSelectedTeam(team);
         localStorage.setItem(STORAGE_KEY, team.id.toString());
       }
     }
   }, [teams, searchParams, loading]);
 
-  // Reset selected message when team changes
-  useEffect(() => {
-    setSelectedMessage(null);
-  }, [selectedTeam]);
+  const handleTeamSelect = (team) => {
+    setSelectedTeam(team);
+    setIsCreating(false);
+    setSearchParams({ teamId: team.id.toString() });
+    localStorage.setItem(STORAGE_KEY, team.id.toString());
+  };
 
   const handleCreateClick = () => {
     setError(null);
     setIsCreating(true);
     setSelectedTeam(null);
-    setSearchParams({});
+    setSearchParams({ view: CREATE_MARKER });
     localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleCreateCancel = () => {
     setIsCreating(false);
+    const storedTeamId = localStorage.getItem(STORAGE_KEY);
+    if (storedTeamId) {
+      const team = teams.find(t => t.id.toString() === storedTeamId);
+      if (team) {
+        setSelectedTeam(team);
+        setSearchParams({ teamId: team.id.toString() });
+      } else {
+        setSearchParams({});
+      }
+    } else {
+      setSearchParams({});
+    }
   };
 
   const handleCreateSubmit = async (result) => {
     if (result.error) {
-      console.error('Error creating team:', result.error);
       setError(result.error);
-      // Don't close the form if there's an error
       return;
     }
     
-    // On success, update UI state
     setError(null);
     const newTeam = result.data;
-    setTeams(prevTeams => [newTeam, ...prevTeams]); // Add to beginning of array
+    setTeams(prevTeams => [newTeam, ...prevTeams]);
     setSelectedTeam(newTeam);
+    setIsCreating(false);
     setSearchParams({ teamId: newTeam.id.toString() });
     localStorage.setItem(STORAGE_KEY, newTeam.id.toString());
-    setIsCreating(false);
-  };
-
-  const handleTeamSelect = (team) => {
-    console.log('Selecting team:', team);
-    setSelectedTeam(team);
-    setSearchParams({ teamId: team.id.toString() });
-    localStorage.setItem(STORAGE_KEY, team.id.toString());
   };
 
   if (!currentUser) {
@@ -182,57 +183,14 @@ function AccountPage() {
   return (
     <div className="account-page">
       <div className="content-container">
-        <div className="team-list">
-          <div className="team-toolbar">
-            <button className="tool-button">
-              🔍 Search
-            </button>
-            <button className="tool-button" onClick={handleCreateClick}>
-              ➕ Create
-            </button>
-            <button className="tool-button">
-              🔗 Join
-            </button>
-          </div>
-
-          <div className="team-items">
-            {loading ? (
-              <div className="loading">Loading your teams...</div>
-            ) : error ? (
-              <div className="error-state">
-                <p>Error: {error}</p>
-                <button onClick={() => window.location.reload()} className="primary-button">
-                  Retry
-                </button>
-              </div>
-            ) : teams.length === 0 ? (
-              <div className="empty-state">
-                <p>You don't have any teams yet.</p>
-                <button onClick={handleCreateClick} className="primary-button">
-                  Create Your First Team
-                </button>
-              </div>
-            ) : (
-              [...teams].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(team => (
-                <div
-                  key={team.id}
-                  className={`team-item ${selectedTeam?.id === team.id ? 'selected' : ''}`}
-                  onClick={() => handleTeamSelect(team)}
-                >
-                  <h3>{team.name}</h3>
-                  <p>{team.description}</p>
-                  <div className="team-meta">
-                    <span>Messages: {team.messages?.length || 0}</span>
-                    <span>Groups: {team.groups?.length || 0}</span>
-                  </div>
-                  <div className="team-created">
-                    Created {new Date(team.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <TeamList
+          teams={teams}
+          loading={loading}
+          error={error}
+          selectedTeam={selectedTeam}
+          onTeamSelect={handleTeamSelect}
+          onCreateClick={handleCreateClick}
+        />
 
         <div className="team-content">
           {error && (
@@ -267,74 +225,11 @@ function AccountPage() {
               </div>
 
               {activeView === 'details' ? (
-                <div className="team-details">
-                  <p><strong>Description:</strong> {selectedTeam.description}</p>
-                  <p><strong>Created:</strong> {new Date(selectedTeam.created_at).toLocaleDateString()}</p>
-                  <p><strong>Your Roles:</strong> {selectedTeam.roles?.join(', ')}</p>
-                  <h3>Groups</h3>
-                  <ul className="group-list">
-                    {selectedTeam.groups?.map(group => (
-                      <li key={group.id} className="group-item">
-                        <span className="group-name">{group.name}</span>
-                        <span className="group-role">({group.role})</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <TeamDetails team={selectedTeam} />
               ) : (
-                <div className="messages-container">
-                  <div className="message-list">
-                    {mockMessages
-                      .filter(msg => msg.teamId === selectedTeam.id)
-                      .map(message => (
-                        <div 
-                          key={message.id}
-                          className={`message-item ${selectedMessage?.id === message.id ? 'selected' : ''}`}
-                          onClick={() => setSelectedMessage(message)}
-                        >
-                          <h4>{message.title}</h4>
-                          <p>{message.text.substring(0, 100)}...</p>
-                          <div className="message-meta">
-                            <span>{message.type}</span>
-                            <span>{message.createdAt}</span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                  <div className="message-content">
-                    {selectedMessage ? (
-                      <div className="message-detail">
-                        <h3>{selectedMessage.title}</h3>
-                        <div className="message-info">
-                          <span>Type: {selectedMessage.type}</span>
-                          <span>Created: {selectedMessage.createdAt}</span>
-                        </div>
-                        <p className="message-text">{selectedMessage.text}</p>
-                        {selectedMessage.medias?.length > 0 && (
-                          <div className="message-media">
-                            <h4>Attachments:</h4>
-                            <ul>
-                              {selectedMessage.medias.map((media, index) => (
-                                <li key={index}>{media}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        <div className="message-actions">
-                          {selectedMessage.actions?.map((action, index) => (
-                            <button key={index} className="action-button">
-                              {action}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="empty-state">
-                        <h3>Select a message to view details</h3>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TeamMessages 
+                  messages={mockMessages.filter(msg => msg.teamId === selectedTeam.id)} 
+                />
               )}
             </>
           ) : (
