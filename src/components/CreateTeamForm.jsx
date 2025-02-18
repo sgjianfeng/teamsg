@@ -97,17 +97,20 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
           </div>
         </div>
         <div className="form-actions">
-          <button type="button" onClick={() => setStep('form')} className="secondary-button" style={{ height: '40px' }}>
-            Back to Edit
+          <button 
+            type="button" 
+            onClick={() => setStep('form')} 
+            className="secondary-button"
+          >
+            <span>← Back to Edit</span>
           </button>
           <button 
             type="button" 
             onClick={handleConfirm} 
             className="primary-button"
             disabled={isLoading}
-            style={{ height: '40px' }}
           >
-            {isLoading ? 'Creating...' : 'Confirm & Create'}
+            <span>{isLoading ? 'Creating...' : 'Confirm & Create'}</span>
           </button>
         </div>
       </div>
@@ -159,11 +162,11 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
       </div>
 
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="secondary-button" style={{ height: '40px' }}>
-          Cancel
+        <button type="button" onClick={onCancel} className="secondary-button">
+          <span>Cancel</span>
         </button>
-        <button type="submit" className="primary-button" style={{ height: '40px' }}>
-          Continue to Summary
+        <button type="submit" className="primary-button">
+          <span>Continue to Summary →</span>
         </button>
       </div>
       {error?.includes('Database tables not set up') && (
