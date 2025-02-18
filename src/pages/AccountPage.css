@@ -17,6 +17,15 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  min-height: 600px;
+}
+
+/* Add styles for the form container */
+.team-content > .create-team-form {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100%;
 }
 
 .error-banner {

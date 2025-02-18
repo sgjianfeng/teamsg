@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import TeamList from '../components/TeamList';
-import TeamDetails from '../components/TeamDetails';
+import TeamProfile from '../components/TeamProfile';
 import TeamMessages from '../components/TeamMessages';
 import CreateTeamForm from '../components/CreateTeamForm';
 import { TeamModel } from '../db/models';
@@ -59,7 +59,7 @@ function AccountPage() {
     return storedTeamId ? { id: storedTeamId } : null;
   });
   const [isCreating, setIsCreating] = useState(() => searchParams.get('view') === CREATE_MARKER);
-  const [activeView, setActiveView] = useState('details');
+  const [activeView, setActiveView] = useState('profile');
 
   useEffect(() => {
     let mounted = true;
@@ -210,10 +210,10 @@ function AccountPage() {
                 <h2>{selectedTeam.name}</h2>
                 <div className="team-nav">
                   <button 
-                    className={`nav-button ${activeView === 'details' ? 'active' : ''}`}
-                    onClick={() => setActiveView('details')}
+                    className={`nav-button ${activeView === 'profile' ? 'active' : ''}`}
+                    onClick={() => setActiveView('profile')}
                   >
-                    Details
+                    Profile
                   </button>
                   <button 
                     className={`nav-button ${activeView === 'messages' ? 'active' : ''}`}
@@ -224,8 +224,8 @@ function AccountPage() {
                 </div>
               </div>
 
-              {activeView === 'details' ? (
-                <TeamDetails team={selectedTeam} />
+              {activeView === 'profile' ? (
+                <TeamProfile team={selectedTeam} />
               ) : (
                 <TeamMessages 
                   messages={mockMessages.filter(msg => msg.teamId === selectedTeam.id)} 

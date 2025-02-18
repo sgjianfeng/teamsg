@@ -1,13 +1,13 @@
-.team-details {
+.team-profile {
   padding: 2rem;
 }
 
-.team-details p {
+.team-profile p {
   margin-bottom: 1rem;
   line-height: 1.6;
 }
 
-.team-details h3 {
+.team-profile h3 {
   margin: 2rem 0 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e0e0e0;

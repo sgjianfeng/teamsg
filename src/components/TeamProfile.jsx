@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import './TeamDetails.css';
+import './TeamProfile.css';
 
-function TeamDetails({ team }) {
+function TeamProfile({ team }) {
   if (!team) {
     return (
       <div className="empty-state">
@@ -12,7 +12,7 @@ function TeamDetails({ team }) {
   }
 
   return (
-    <div className="team-details">
+    <div className="team-profile">
       <p><strong>Description:</strong> {team.description}</p>
       <p><strong>Created:</strong> {new Date(team.created_at).toLocaleDateString()}</p>
       <p><strong>Your Roles:</strong> {team.roles?.join(', ')}</p>
@@ -30,7 +30,7 @@ function TeamDetails({ team }) {
   );
 }
 
-TeamDetails.propTypes = {
+TeamProfile.propTypes = {
   team: PropTypes.shape({
     description: PropTypes.string,
     created_at: PropTypes.string,
@@ -43,4 +43,4 @@ TeamDetails.propTypes = {
   })
 };
 
-export default TeamDetails;
+export default TeamProfile;
