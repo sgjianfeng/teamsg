@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TeamModel } from '../db/models';
 import { useAuth } from '../contexts/AuthContext';
 import './CreateTeamForm.css';
@@ -8,10 +8,21 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
     id: '',
     name: '',
-    description: ''
+    description: '',
+    tags: []
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [availableTags, setAvailableTags] = useState([]);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      const tags = await TeamModel.getAvailableTags();
+      console.log('Available tags:', tags); // Debug log
+      setAvailableTags(tags);
+    };
+    loadTags();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +31,32 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
       [name]: value
     }));
     setError('');
+  };
+
+  const handleTagChange = (tagName) => {
+    setFormData(prev => {
+      const existingTag = prev.tags.find(tag => tag.name === tagName);
+      if (existingTag) {
+        return {
+          ...prev,
+          tags: prev.tags.filter(tag => tag.name !== tagName)
+        };
+      } else {
+        return {
+          ...prev,
+          tags: [...prev.tags, { name: tagName, description: '' }]
+        };
+      }
+    });
+  };
+
+  const handleTagDescriptionChange = (tagName, description) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.map(tag => 
+        tag.name === tagName ? { ...tag, description } : tag
+      )
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -79,6 +116,19 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
             <label>Description:</label>
             <p>{formData.description}</p>
           </div>
+          {formData.tags.length > 0 && (
+            <div className="summary-item">
+              <label>Tags:</label>
+              <ul>
+                {formData.tags.map(tag => (
+                  <li key={tag.name}>
+                    <strong>{tag.name}</strong>
+                    {tag.description && <p>Description: {tag.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="summary-item">
             <label>Default Groups:</label>
             <ul>
@@ -159,6 +209,36 @@ export default function CreateTeamForm({ onSubmit, onCancel }) {
           placeholder="Enter team description"
           rows={4}
         />
+      </div>
+
+      <div className="form-group">
+        <label>Team Tags</label>
+        <div className="tag-options">
+          {availableTags && availableTags.length > 0 ? (
+            availableTags.map(tag => (
+              <div key={tag.name} className="tag-option">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={formData.tags.some(t => t.name === tag.name)}
+                    onChange={() => handleTagChange(tag.name)}
+                  />
+                  {tag.name}
+                </label>
+                {formData.tags.some(t => t.name === tag.name) && (
+                  <textarea
+                    placeholder={`Enter ${tag.name} description`}
+                    value={formData.tags.find(t => t.name === tag.name)?.description || ''}
+                    onChange={(e) => handleTagDescriptionChange(tag.name, e.target.value)}
+                    rows={2}
+                  />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="no-tags-message">No tags available. Please ensure database setup is complete.</p>
+          )}
+        </div>
       </div>
 
       <div className="form-actions">

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import policiesSQL from '../db/migrations/apply_policies.sql?raw';
 import initDatabaseSQL from '../db/migrations/init_database.sql?raw';
+import teamTagsSQL from '../db/migrations/02_add_team_tags.sql?raw';
 import './DatabaseSetupPage.css';
 
 const setupInstructions = `
@@ -10,6 +11,7 @@ const setupInstructions = `
 
 1. Copy and run the initialization SQL in Supabase SQL Editor to create database tables
 2. Copy and run the policies SQL in Supabase SQL Editor to set up access policies
+3. Copy and run the team tags SQL in Supabase SQL Editor to add tag support
 
 Note: You can either click the buttons above to copy each SQL, or click directly on the SQL content below.
 `;
@@ -18,6 +20,7 @@ export default function DatabaseSetupPage() {
   const navigate = useNavigate();
   const [copiedInit, setCopiedInit] = useState(false);
   const [copiedPolicies, setCopiedPolicies] = useState(false);
+  const [copiedTags, setCopiedTags] = useState(false);
 
   return (
     <div className="database-setup-page">
@@ -48,12 +51,23 @@ export default function DatabaseSetupPage() {
               >
                 Copy Policy SQL
               </button>
+              <button
+                className="primary-button"
+                onClick={() => {
+                  navigator.clipboard.writeText(teamTagsSQL);
+                  setCopiedTags(true);
+                  setTimeout(() => setCopiedTags(false), 2000);
+                }}
+              >
+                Copy Tags SQL
+              </button>
             </div>
           </div>
         </div>
 
         {copiedInit && <div className="success-notification">Database init SQL copied!</div>}
         {copiedPolicies && <div className="success-notification">Policy SQL copied!</div>}
+        {copiedTags && <div className="success-notification">Team tags SQL copied!</div>}
       </nav>
 
       <div className="markdown-content">
@@ -83,6 +97,19 @@ export default function DatabaseSetupPage() {
               setTimeout(() => setCopiedPolicies(false), 2000);
             }}>
               {policiesSQL}
+            </pre>
+          </div>
+        </div>
+
+        <div className="sql-section">
+          <h3>3. Team Tags SQL</h3>
+          <div className="sql-copy-section">
+            <pre onClick={() => {
+              navigator.clipboard.writeText(teamTagsSQL);
+              setCopiedTags(true);
+              setTimeout(() => setCopiedTags(false), 2000);
+            }}>
+              {teamTagsSQL}
             </pre>
           </div>
         </div>

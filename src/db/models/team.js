@@ -5,6 +5,31 @@ import { MessageModel } from './message'
 
 export class TeamModel {
   /**
+   * Gets all available predefined tags
+   * @returns {Promise<Object>} List of available tags
+   */
+  static async getAvailableTags() {
+    try {
+      const { data: tags, error } = await supabase
+        .from('team_tags')
+        .select('name')
+        .order('name');
+
+      if (error) throw error;
+      
+      // Process tags data to ensure correct format
+      const processedTags = tags?.map(tag => ({
+        name: tag.name
+      })) || [];
+      
+      return processedTags;
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      return [];
+    }
+  }
+
+  /**
    * Creates a new team in the database with default groups
    * @param {Object} teamData - The team data to store
    * @param {string} teamData.id - Unique team identifier
@@ -62,6 +87,21 @@ export class TeamModel {
         throw teamError;
       }
 
+      // Add tags if provided
+      if (teamData.tags && teamData.tags.length > 0) {
+        const { error: tagError } = await supabase
+          .from('team_tag_assignments')
+          .insert(
+            teamData.tags.map(tag => ({
+              team_id: team.id,
+              tag_name: tag.name,
+              description: tag.description
+            }))
+          );
+
+        if (tagError) throw tagError;
+      }
+
       return {
         data: {
           ...team,
@@ -84,7 +124,17 @@ export class TeamModel {
     try {
       const { data: team, error } = await supabase
         .from('teams')
-        .select('id, name, description, created_at, created_by')
+        .select(`
+          id, 
+          name, 
+          description, 
+          created_at, 
+          created_by,
+          team_tag_assignments (
+            tag_name,
+            description
+          )
+        `)
         .eq('id', teamId)
         .single();
 
@@ -123,7 +173,17 @@ export class TeamModel {
       // Then get teams user has created
       const { data: teams, error } = await supabase
         .from('teams')
-        .select('id, name, description, created_at, created_by')
+        .select(`
+          id, 
+          name, 
+          description, 
+          created_at, 
+          created_by,
+          team_tag_assignments (
+            tag_name,
+            description
+          )
+        `)
         .eq('created_by', userId);
 
       if (error) throw error;
@@ -143,5 +203,4 @@ export class TeamModel {
       return { error: error.message };
     }
   }
-
 }
