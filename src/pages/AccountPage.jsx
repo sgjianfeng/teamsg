@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import TeamList from '../components/TeamList';
 import TeamProfile from '../components/TeamProfile';
 import TeamMessages from '../components/TeamMessages';
+import GroupList from '../components/GroupList';
 import CreateTeamForm from '../components/CreateTeamForm';
 import { TeamModel } from '../db/models';
 import './AccountPage.css';
@@ -221,15 +222,23 @@ function AccountPage() {
                   >
                     Messages
                   </button>
+                  <button 
+                    className={`nav-button ${activeView === 'groups' ? 'active' : ''}`}
+                    onClick={() => setActiveView('groups')}
+                  >
+                    Groups
+                  </button>
                 </div>
               </div>
 
               {activeView === 'profile' ? (
                 <TeamProfile team={selectedTeam} />
-              ) : (
+              ) : activeView === 'messages' ? (
                 <TeamMessages 
                   messages={mockMessages.filter(msg => msg.teamId === selectedTeam.id)} 
                 />
+              ) : (
+                <GroupList team={selectedTeam} />
               )}
             </>
           ) : (
