@@ -1,17 +1,65 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { TeamModel } from '../db/models/team';
 import './VisionSummaryPage.css';
 
 function VisionSummaryPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { vision, images } = location.state || {};
+  const { currentUser } = useAuth();
+  let { vision, images } = location.state || {};
+  
+  const [mode, setMode] = useState('personal'); // 'personal' or 'team'
+  const [id, setId] = useState('');
+  const [userTeams, setUserTeams] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [filteredTeams, setFilteredTeams] = useState([]);
+  const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+
+  // Convert File objects to URLs if needed (when coming from login flow)
+  if (images && images.length > 0 && images[0] instanceof File) {
+    images = images.map(image => URL.createObjectURL(image));
+  }
+
+  // Fetch user's teams when in team mode
+  useEffect(() => {
+    if (mode === 'team' && currentUser) {
+      setIsLoading(true);
+      TeamModel.getUserTeams(currentUser.id)
+        .then(({ data, error }) => {
+          if (error) console.error('Error fetching teams:', error);
+          else setUserTeams(data || []);
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [mode, currentUser]);
+
+  // Filter teams based on search input
+  useEffect(() => {
+    if (mode === 'team' && id.trim()) {
+      const filtered = userTeams.filter(team => 
+        team.id.toLowerCase().includes(id.toLowerCase()) ||
+        team.name.toLowerCase().includes(id.toLowerCase())
+      );
+      setFilteredTeams(filtered);
+      setShowTeamDropdown(true);
+    } else {
+      setFilteredTeams([]);
+      setShowTeamDropdown(false);
+    }
+  }, [id, userTeams, mode]);
+
+  const handleTeamSelect = (team) => {
+    setId(team.id);
+    setShowTeamDropdown(false);
+  };
 
   useEffect(() => {
-    if (!vision) {
+    if (!vision || !currentUser) {
       navigate('/');
     }
-  }, [vision, navigate]);
+  }, [vision, currentUser, navigate]);
 
   if (!vision) {
     return null;
@@ -20,7 +68,60 @@ function VisionSummaryPage() {
   return (
     <div className="vision-summary-page">
       <div className="vision-summary-container">
-        <h1>Your Vision Summary</h1>
+        <h1>Vision Summary</h1>
+        <div className="divider"></div>
+        
+        <div className="vision-header">
+          <div className="vision-input-row">
+            <p className="vision-purpose">
+              Vision on behalf of:
+            </p>
+            <div className="toggle-container">
+              <button 
+                className={`toggle-button ${mode === 'personal' ? 'active' : ''}`}
+                onClick={() => {
+                  setMode('personal');
+                  setId('');
+                }}
+              >
+                Personal
+              </button>
+              <button 
+                className={`toggle-button ${mode === 'team' ? 'active' : ''}`}
+                onClick={() => {
+                  setMode('team');
+                  setId('');
+                }}
+              >
+                Team
+              </button>
+            </div>
+
+            <div className="input-container">
+              <input
+                type="text"
+                placeholder={mode === 'personal' ? "Enter Personal ID" : "Search or Enter Team ID"}
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+                className="id-input"
+              />
+              {mode === 'team' && showTeamDropdown && filteredTeams.length > 0 && (
+                <div className="team-dropdown">
+                  {filteredTeams.map(team => (
+                    <div 
+                      key={team.id}
+                      className="team-option"
+                      onClick={() => handleTeamSelect(team)}
+                    >
+                      <span className="team-id">{team.id}</span>
+                      <span className="team-name">{team.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         
         <div className="vision-text">
           <h2>Your Vision</h2>

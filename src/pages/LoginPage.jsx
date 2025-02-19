@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import './AuthPages.css';
 
 function LoginPage() {
@@ -12,6 +12,9 @@ function LoginPage() {
   const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const { returnPath, formData } = location.state || {};
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -19,7 +22,12 @@ function LoginPage() {
       setError('');
       setLoading(true);
       await login(email, password);
-      navigate('/account');
+      
+      if (returnPath && formData) {
+        navigate(returnPath, { state: formData });
+      } else {
+        navigate('/account');
+      }
     } catch (error) {
       console.error('Login error details:', error);
       setError(`Login failed: ${error.message || 'Please check your credentials.'}`);

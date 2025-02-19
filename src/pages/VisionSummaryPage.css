@@ -1,66 +1,162 @@
 .vision-summary-page {
-  min-height: 100vh;
-  background-color: #f5f7fa;
-  padding: 2rem 1rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .vision-summary-container {
-  max-width: 1000px;
-  margin: 0 auto;
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.vision-summary-container h1 {
-  color: #333;
-  font-size: 2.5rem;
-  text-align: center;
-  margin-bottom: 2rem;
+.vision-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.vision-input-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0;
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.vision-purpose {
+  color: #495057;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.toggle-container {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 1rem;
+}
+
+.toggle-button {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #007bff;
+  background: transparent;
+  color: #007bff;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.toggle-button.active {
+  background: #007bff;
+  color: white;
+}
+
+.input-container {
+  position: relative;
+  flex: 1;
+}
+
+.id-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.id-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.team-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.team-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.team-option:last-child {
+  border-bottom: none;
+}
+
+.team-option:hover {
+  background-color: #f8f9fa;
+}
+
+.team-id {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.team-name {
+  font-weight: bold;
 }
 
 .vision-text {
-  margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 1.5rem 0;
 }
 
-.vision-text h2 {
-  color: #4a90e2;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+.vision-images {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 1.5rem 0;
 }
 
-.vision-text p {
-  color: #444;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
+.vision-text h2,
 .vision-images h2 {
-  color: #4a90e2;
-  font-size: 1.5rem;
+  color: #343a40;
+  font-size: 1.2rem;
   margin-bottom: 1rem;
 }
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.vision-image {
-  aspect-ratio: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .vision-image img {
   width: 100%;
-  height: 100%;
+  height: 140px;
   object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+.vision-image img:hover {
+  transform: scale(1.05);
 }
 
 .action-buttons {
@@ -70,45 +166,20 @@
 }
 
 .back-button {
-  background-color: #4a90e2;
+  padding: 0.75rem 2rem;
+  background-color: #6c757d;
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .back-button:hover {
-  background-color: #357abd;
+  background-color: #5a6268;
 }
 
-@media (max-width: 768px) {
-  .vision-summary-container {
-    padding: 1.5rem;
-  }
-
-  .vision-summary-container h1 {
-    font-size: 2rem;
-  }
-
-  .vision-text p {
-    font-size: 1rem;
-  }
-
-  .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .vision-summary-container h1 {
-    font-size: 1.75rem;
-  }
-
-  .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
+.divider {
+  border-top: 1px solid #eee;
+  margin: 1.5rem 0;
 }

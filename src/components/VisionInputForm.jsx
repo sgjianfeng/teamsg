@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import FileUploader from './FileUploader';
 import './VisionInputForm.css';
 
@@ -23,17 +24,35 @@ function VisionInputForm() {
     setImages(newImages);
   };
 
+  const { currentUser } = useAuth();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!vision.trim()) {
       setError('Please enter your vision');
       return;
     }
+
+    const formData = {
+      vision,
+      images: images
+    };
+
+    if (!currentUser) {
+      navigate('/login', {
+        state: {
+          returnPath: '/vision-summary',
+          formData
+        }
+      });
+      return;
+    }
+
     navigate('/vision-summary', { 
-      state: { 
+      state: {
         vision,
         images: images.map(image => URL.createObjectURL(image))
-      } 
+      }
     });
   };
 
