@@ -5,6 +5,89 @@ import { MessageModel } from './message'
 
 export class TeamModel {
   /**
+   * Search teams by matching vision text against vision-supporter tag descriptions
+   * @param {string} visionText - The vision text to match against
+   * @param {number} page - Page number for pagination
+   * @param {number} limit - Number of results per page
+   * @returns {Promise<Object>} Matched teams with their vision supporter tags
+   */
+  static async searchByVisionSupport(visionText, page = 1, limit = 5) {
+    try {
+      const offset = (page - 1) * limit;
+      
+      // First get all teams with vision-supporter tags
+      const { data: teams, error } = await supabase
+        .from('teams')
+        .select(`
+          id,
+          name,
+          description,
+          team_tag_assignments!inner (
+            tag_name,
+            description
+          )
+        `)
+        .eq('team_tag_assignments.tag_name', 'vision-supporter');
+
+      if (error) throw error;
+      if (!teams?.length) return { data: [] };
+
+      // Get embedding for vision text
+      const visionEmbedding = await this.getEmbedding(visionText);
+
+      // Get embeddings for all vision supporter descriptions and calculate similarity
+      const teamsWithScores = await Promise.all(
+        teams.map(async (team) => {
+          const supporterTag = team.team_tag_assignments.find(tag => tag.tag_name === 'vision-supporter');
+          const embedding = await this.getEmbedding(supporterTag?.description || '');
+          const similarity = this.cosineSimilarity(visionEmbedding, embedding);
+          return { ...team, similarity };
+        })
+      );
+
+      // Sort by similarity score and paginate, keeping the similarity score
+      const sortedTeams = teamsWithScores
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(offset, offset + limit);
+
+      return { data: sortedTeams };
+    } catch (error) {
+      console.error('Error in semantic search:', error);
+      return { error: error.message };
+    }
+  }
+
+  static async getEmbedding(text) {
+    try {
+      const response = await fetch('http://localhost:11434/api/embeddings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'deepseek-coder:6.7b',
+          prompt: text
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ollama API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.embedding;
+    } catch (error) {
+      console.error('Error getting embedding:', error);
+      throw error;
+    }
+  }
+
+  static cosineSimilarity(a, b) {
+    const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+    const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+    const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+  }
+
+  /**
    * Gets all available predefined tags
    * @returns {Promise<Object>} List of available tags
    */
