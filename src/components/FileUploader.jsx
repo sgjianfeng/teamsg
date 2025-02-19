@@ -1,78 +1,45 @@
-import { useState, useRef } from 'react';
-import { uploadFile } from '../utils/blob-storage';
+import { useRef } from 'react';
 import './FileUploader.css';
 
-export function FileUploader({ onUploadComplete, acceptedTypes = "*" }) {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(null);
+function FileUploader({ onFileSelect, accept = "*", multiple = false }) {
   const fileInputRef = useRef(null);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    try {
-      setError(null);
-      setUploading(true);
-      setProgress(0);
-
-      // Upload the file with progress tracking
-      const result = await uploadFile(file, (progress) => {
-        setProgress(progress);
-      });
-
-      onUploadComplete?.(result);
-      setProgress(100);
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (err) {
-      setError(err.message);
-      console.error('Upload error:', err);
-    } finally {
-      setUploading(false);
+    onFileSelect?.(files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
   return (
     <div className="file-uploader">
-      <div className="upload-container">
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileChange}
-          disabled={uploading}
-          accept={acceptedTypes}
-          className="file-input"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="upload-button"
-        >
-          {uploading ? 'Uploading...' : 'Choose File'}
-        </button>
-      </div>
-
-      {uploading && (
-        <div className="progress-container">
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <span className="progress-text">{Math.round(progress)}%</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileChange}
+        accept={accept}
+        multiple={multiple}
+        className="file-input"
+      />
+      <button 
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="file-button"
+        title="Add photos"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M8.5 13.5l3 3L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M16 5h6m-3-3v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M17 9a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" strokeWidth="2"/>
+        </svg>
+        <span className="file-button-text">Add Photos</span>
+      </button>
     </div>
   );
 }
+
+export default FileUploader;

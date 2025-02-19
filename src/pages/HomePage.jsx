@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getDeviceType } from '../utils/deviceDetect';
+import VisionInputForm from '../components/VisionInputForm';
 import './HomePage.css';
 
 function HomePage() {
@@ -17,38 +18,70 @@ function HomePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const industryHighlights = [
+    { title: 'Local Flavors', description: 'Traditional hawker delights' },
+    { title: 'Fine Dining', description: 'Michelin-starred experiences' },
+    { title: 'Fusion Cuisine', description: 'Modern culinary innovation' },
+    { title: 'Street Food', description: 'Authentic local tastes' }
+  ];
+
   return (
     <div className={`home-page ${deviceType}`}>
-      <div className="hero">
-        <div className="hero-content">
+      {/* Vision Section */}
+      <section className="vision-section">
+        <div className="vision-header">
           <h1>Vision Singapore</h1>
           <p>Partnering with AI to transform your vision into reality</p>
         </div>
-      </div>
+        <VisionInputForm />
+      </section>
 
-      <div className="industries-section">
-        <div className="industry-container">
-          <div className="industry-info">
-            <h2><Link to="/food">Food & Beverage</Link></h2>
-            <p>Experience Singapore's vibrant food paradise - from Michelin-starred restaurants to beloved hawker centers, blending traditional flavors with modern innovation in a world-renowned culinary destination</p>
-          </div>
-          <div className="industry-companies">
-            <div className="grid-container">
-              <div className="company-card">
-                <div className="company-logo">M</div>
-                <div className="company-details">
-                  <h3>Meow BBQ</h3>
-                  <p>Modern Chinese BBQ restaurant bringing innovative dining concepts to Singapore's vibrant food scene</p>
-                  <div className="featured-product">
-                    <span>Signature dish:</span> Premium Beef Platter
-                  </div>
+      {/* Industries Section */}
+      <section className="industries-section">
+        <div className="industries-container">
+          {/* Food & Beverage Industry */}
+          <div className="industry-row">
+            <h2 className="industry-title">Food & Beverage</h2>
+            
+            <div className="industry-content">
+              {/* Left: Industry Highlights Grid */}
+              <div className="industry-highlights">
+                <div className="highlights-grid">
+                  {industryHighlights.map((highlight, index) => (
+                    <div key={index} className="highlight-card">
+                      <h3>{highlight.title}</h3>
+                      <p>{highlight.description}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              {/* More company cards can be added here in the future */}
+
+              {/* Right: Companies */}
+              <div className="industry-companies">
+                <div className="companies-grid">
+                  <Link to="/food/meowbbq" className="company-card">
+                    <div className="company-logo">
+                      <img src="/images/companies/meowbbq-logo.svg" alt="Meow BBQ Logo" />
+                    </div>
+                    <div className="company-details">
+                      <h3>Meow BBQ</h3>
+                      <p className="company-mission">
+                        Modern Chinese BBQ restaurant bringing innovative dining concepts to Singapore's vibrant food scene
+                      </p>
+                      <div className="company-highlight">
+                        <span>Signature:</span> Premium Beef Platter
+                      </div>
+                    </div>
+                  </Link>
+                  {/* More company cards will be added here */}
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* More industries will be added here */}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

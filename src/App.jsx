@@ -14,6 +14,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
 const UploadTestPage = lazy(() => import('./pages/UploadTestPage'))
 const DatabaseSetupPage = lazy(() => import('./pages/DatabaseSetupPage'))
+const VisionSummaryPage = lazy(() => import('./pages/VisionSummaryPage'))
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -39,6 +40,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/database-setup" element={<DatabaseSetupPage />} />
+            <Route path="/vision-summary" element={<VisionSummaryPage />} />
             <Route 
               path="/account" 
               element={
