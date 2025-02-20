@@ -59,21 +59,36 @@ export class TeamModel {
 
   static async getEmbedding(text) {
     try {
-      const response = await fetch('http://localhost:11434/api/embeddings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'deepseek-coder:6.7b',
-          prompt: text
-        })
-      });
+      // Check if we're in a production environment (Vercel)
+      const isProduction = process.env.VERCEL === '1';
+      
+      let response;
+      if (isProduction) {
+        // Use OpenAI API through our serverless function
+        response = await fetch('/api/get-embedding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+      } else {
+        // Use local Ollama API
+        response = await fetch('http://localhost:11434/api/embeddings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'deepseek-coder:6.7b',
+            prompt: text
+          })
+        });
+      }
 
       if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.statusText}`);
+        const errorMessage = isProduction ? 'OpenAI API error' : 'Ollama API error';
+        throw new Error(`${errorMessage}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      return data.embedding;
+      return isProduction ? data.embedding : data.embedding;
     } catch (error) {
       console.error('Error getting embedding:', error);
       throw error;
