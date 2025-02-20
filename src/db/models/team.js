@@ -59,11 +59,11 @@ export class TeamModel {
 
   static async getEmbedding(text) {
     try {
-      // Check if we're in a production environment (Vercel)
-      const isProduction = process.env.VERCEL === '1';
+      // Check if we're running on Vercel by checking the URL
+      const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
       
       let response;
-      if (isProduction) {
+      if (isVercel) {
         // Use OpenAI API through our serverless function
         response = await fetch('/api/get-embedding', {
           method: 'POST',
@@ -83,12 +83,12 @@ export class TeamModel {
       }
 
       if (!response.ok) {
-        const errorMessage = isProduction ? 'OpenAI API error' : 'Ollama API error';
+        const errorMessage = isVercel ? 'OpenRouter API error' : 'Ollama API error';
         throw new Error(`${errorMessage}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      return isProduction ? data.embedding : data.embedding;
+      return data.embedding;
     } catch (error) {
       console.error('Error getting embedding:', error);
       throw error;
