@@ -59,32 +59,15 @@ export class TeamModel {
 
   static async getEmbedding(text) {
     try {
-      // Check if we're running on Vercel by checking the URL
-      const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
-      
-      let response;
-      if (isVercel) {
-        // Use OpenAI API through our serverless function
-        response = await fetch('/api/get-embedding', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-      } else {
-        // Use local Ollama API
-        response = await fetch('http://localhost:11434/api/embeddings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'deepseek-coder:6.7b',
-            prompt: text
-          })
-        });
-      }
+      // Always use our serverless function for embeddings
+      const response = await fetch('/api/get-embedding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
 
       if (!response.ok) {
-        const errorMessage = isVercel ? 'OpenRouter API error' : 'Ollama API error';
-        throw new Error(`${errorMessage}: ${response.statusText}`);
+        throw new Error(`API error: ${response.statusText}`);
       }
 
       const data = await response.json();
