@@ -78,12 +78,12 @@ const extractKeywords = async (text, retries = MAX_RETRIES) => {
         messages: [
           {
             role: "system",
-            content: "Extract 3-4 keywords from the text. Return ONLY space-separated words, no punctuation or explanations."
+            content: "Extract key words from the text (3-4 unique words). Return ONLY space-separated words with NO duplicates, no punctuation, no explanations."
           },
           {
             role: "user",
-            content: `Example input: "create a website for my business"
-Example output: create website business web
+            content: `Example input: "find good customers for my business"
+Example output: find customers business good
 
 Input: ${englishText}
 Return ONLY keywords:`

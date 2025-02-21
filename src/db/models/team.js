@@ -75,7 +75,6 @@ export class TeamModel {
           type: 'websearch',
           config: 'english'
         })
-        .order('team_tag_assignments.description', { ascending: false })
         .range(offset, offset + limit - 1);
 
       if (error) {
@@ -83,24 +82,18 @@ export class TeamModel {
         throw error;
       }
 
-      if (!teams?.length) return { data: [] };
+      // Add a basic match score based on the number of matching keywords
+      const teamsWithScores = teams.map(team => {
+        const supporterTag = team.team_tag_assignments.find(tag => tag.tag_name === 'vision-supporter');
+        const description = supporterTag?.description || '';
+        const keywordCount = keywords.split(' ').filter(keyword => 
+          description.toLowerCase().includes(keyword.toLowerCase())
+        ).length;
+        const similarity = keywordCount / keywords.split(' ').length; // Simple ratio of matching keywords
+        return { ...team, similarity };
+      });
 
-      // Get embedding for vision text for refined ranking
-      const visionEmbedding = await this.getEmbedding(visionText);
-      if (!visionEmbedding) return { data: teams.map(team => ({ ...team, similarity: 0 }))};
-
-      // Calculate semantic similarity only for the filtered results
-      const teamsWithScores = await Promise.all(
-        teams.map(async (team) => {
-          const supporterTag = team.team_tag_assignments.find(tag => tag.tag_name === 'vision-supporter');
-          const embedding = await this.getEmbedding(supporterTag?.description || '');
-          if (!embedding) return { ...team, similarity: 0 };
-          const similarity = this.cosineSimilarity(visionEmbedding, embedding);
-          return { ...team, similarity };
-        })
-      );
-
-      // Sort by similarity score
+      // Sort by match score
       const sortedTeams = teamsWithScores.sort((a, b) => b.similarity - a.similarity);
 
       return { data: sortedTeams };
@@ -108,36 +101,6 @@ export class TeamModel {
       console.error('Error in semantic search:', error);
       return { error: error.message };
     }
-  }
-
-  static async getEmbedding(text) {
-    try {
-      if (!text) {
-        throw new Error('No text provided for embedding');
-      }
-      const response = await fetch(`${this.API_BASE_URL}/get-embedding`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.embedding;
-    } catch (error) {
-      console.error('Error getting embedding:', error);
-      throw error;
-    }
-  }
-
-  static cosineSimilarity(a, b) {
-    const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
-    const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
-    const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
-    return dotProduct / (magnitudeA * magnitudeB);
   }
 
   /**
