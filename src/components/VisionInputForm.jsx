@@ -51,7 +51,7 @@ function VisionInputForm() {
     navigate('/vision-summary', { 
       state: {
         vision,
-        images: images.map(image => URL.createObjectURL(image))
+        images: images.length > 0 ? images.map(image => URL.createObjectURL(image)) : []
       }
     });
   };
@@ -78,7 +78,7 @@ function VisionInputForm() {
             <button 
               type="submit" 
               className="submit-button"
-              disabled={!vision.trim() || images.length === 0}
+              disabled={!vision.trim()}
             >
               Submit
             </button>

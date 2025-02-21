@@ -4,6 +4,32 @@ import { MemberModel } from './member'
 import { MessageModel } from './message'
 
 export class TeamModel {
+  static serverChecked = false;
+  static serverAvailable = false;
+  static API_BASE_URL = '/api';  // Changed to relative path for both dev and prod
+
+  static async checkServer() {
+    if (this.serverChecked) {
+      return this.serverAvailable;
+    }
+
+    try {
+      console.log('TeamModel: Checking API server availability...');
+      const response = await fetch(`${this.API_BASE_URL}/health`);
+      const data = await response.json();
+      console.log('TeamModel: API server health check response:', data);
+      
+      this.serverChecked = true;
+      this.serverAvailable = response.ok;
+      return this.serverAvailable;
+    } catch (error) {
+      console.error('TeamModel: Server health check failed:', error);
+      this.serverChecked = true;
+      this.serverAvailable = false;
+      return false;
+    }
+  }
+
   /**
    * Search teams by matching vision text against vision-supporter tag descriptions
    * @param {string} visionText - The vision text to match against
@@ -14,8 +40,25 @@ export class TeamModel {
   static async searchByVisionSupport(visionText, page = 1, limit = 5) {
     try {
       const offset = (page - 1) * limit;
-      
-      // First get all teams with vision-supporter tags
+
+      // Extract keywords from vision text
+      console.log('Extracting keywords for:', visionText);
+      const response = await fetch(`${this.API_BASE_URL}/extract-keywords`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: visionText })
+      });
+
+      if (!response.ok) {
+        console.error('Keywords extraction failed:', response.status, response.statusText);
+        throw new Error(`Failed to extract keywords: ${response.statusText}`);
+      }
+
+      const { keywords } = await response.json();
+      if (!keywords) return { data: [] };
+
+      console.log('Using keywords for search:', keywords);
+
       const { data: teams, error } = await supabase
         .from('teams')
         .select(`
@@ -27,28 +70,38 @@ export class TeamModel {
             description
           )
         `)
-        .eq('team_tag_assignments.tag_name', 'vision-supporter');
+        .eq('team_tag_assignments.tag_name', 'vision-supporter')
+        .textSearch('team_tag_assignments.description', keywords, {
+          type: 'websearch',
+          config: 'english'
+        })
+        .order('team_tag_assignments.description', { ascending: false })
+        .range(offset, offset + limit - 1);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Search error:', error);
+        throw error;
+      }
+
       if (!teams?.length) return { data: [] };
 
-      // Get embedding for vision text
+      // Get embedding for vision text for refined ranking
       const visionEmbedding = await this.getEmbedding(visionText);
+      if (!visionEmbedding) return { data: teams.map(team => ({ ...team, similarity: 0 }))};
 
-      // Get embeddings for all vision supporter descriptions and calculate similarity
+      // Calculate semantic similarity only for the filtered results
       const teamsWithScores = await Promise.all(
         teams.map(async (team) => {
           const supporterTag = team.team_tag_assignments.find(tag => tag.tag_name === 'vision-supporter');
           const embedding = await this.getEmbedding(supporterTag?.description || '');
+          if (!embedding) return { ...team, similarity: 0 };
           const similarity = this.cosineSimilarity(visionEmbedding, embedding);
           return { ...team, similarity };
         })
       );
 
-      // Sort by similarity score and paginate, keeping the similarity score
-      const sortedTeams = teamsWithScores
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(offset, offset + limit);
+      // Sort by similarity score
+      const sortedTeams = teamsWithScores.sort((a, b) => b.similarity - a.similarity);
 
       return { data: sortedTeams };
     } catch (error) {
@@ -59,8 +112,10 @@ export class TeamModel {
 
   static async getEmbedding(text) {
     try {
-      // Always use our serverless function for embeddings
-      const response = await fetch('/api/get-embedding', {
+      if (!text) {
+        throw new Error('No text provided for embedding');
+      }
+      const response = await fetch(`${this.API_BASE_URL}/get-embedding`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
